@@ -1,0 +1,88 @@
+class Main {
+  
+
+    public static void main(String[] args) {
+      
+      
+        // Uncomment this line if you want to read from a file
+       In.open("public/test1.in");
+        Out.compareTo("public/test1.out");
+        //In.open("public/custom.in");
+
+
+        int[] sequence; // sorted sequence of integers as input
+        
+        
+        int sequence_length = In.readInt();  // read the length of the sorted sequence
+        
+        sequence = new int[sequence_length];
+        
+        // read the sorted seqeuence
+        for(int i=0;i<sequence_length;i++)
+          sequence[i]=In.readInt();
+        
+        
+        
+        int number_queries = In.readInt();      // read the number of queries
+   
+      
+        // read and answer the query
+        for (int i = 0; i < number_queries; i++) {
+          Out.println(rank(sequence, In.readInt()));
+        }
+        
+        
+        // Uncomment this line if you want to read from a file
+        In.close();
+    }
+    
+    public static int rank(int[] sequence, int key)
+    {
+      //initialize a counter variable
+      int counter=0;
+      //Find number of elements<key using bin search, add 1 to result
+      int indexPlusOne = binSearchSpecial(sequence, key, 0, sequence.length - 1, counter) + 1;
+      //return result
+      return indexPlusOne;
+    }
+    
+    public static int binSearchSpecial(int[] sequence, int key, int left, int right, int counter) {
+
+    int mid = left + (right - left) / 2;
+
+    // Base cases
+    
+    //We have traversed the whole array, return the counter
+    if(left>right) {
+      return counter;
+    }
+    // Array has only 1 element, check if its bigger or smaller than key, increment
+    // counter if its smaller
+    if (left == right) {
+      if (key > sequence[left]) {
+        counter++;
+      }
+      return counter;
+    }
+
+    // Key is in the array and equals mid
+    // if (key == sequence[mid]) {
+    // counter = mid;
+    //return counter;
+    //}
+
+    // Divide & conquer
+    // if key is smaller than mid, recurse on left half
+    if (sequence[mid] > key) {
+      return binSearchSpecial(sequence, key, left, mid - 1, counter);
+    }
+
+    // key is larger than mid, recurse on right half and increase counter by mid-left+1
+    // (i.e. number of elements discarded on the left, which are smaller than key)
+    if (sequence[mid] < key) {
+      counter = counter + (mid - left + 1);
+      return binSearchSpecial(sequence, key, mid + 1, right, counter);
+    }
+    return -1;
+  }
+}
