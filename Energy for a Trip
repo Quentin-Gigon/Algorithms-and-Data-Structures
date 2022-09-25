@@ -1,0 +1,78 @@
+class Main {
+  
+
+    public static void main(String[] args) {
+      
+      
+        // Uncomment this line if you want to read from a file
+        In.open("public/test1.in");
+        Out.compareTo("public/test1.out");
+
+
+        boolean[] road; // an array of integers as input
+        
+        
+        int n = In.readInt();  // read the length of the input array
+        
+        road = new boolean[n+1];
+        
+        // read the input array
+        for(int i=1;i<= n ;i++)
+          road[i]=In.readBoolean();
+        
+      
+       
+        
+        Out.println(energy_for_trip(road, n));
+        
+        
+        
+        //Uncomment this line if you want to read from a file
+        In.close();
+    }
+    
+    private static int energy_for_trip(boolean [] road, int n) {
+      //Initialization
+      int[] DP = new int[n+1];
+      
+      //Base case 1
+      if (n==0){
+        return 0;
+      }
+      
+      //Base case 2
+      //if first element is a wall
+      //if (road[1]){
+      //DP[1]=2;
+     // }
+      //if first element is not a wall
+     // else {
+       DP[0]=0;
+      //}
+        
+      
+      // For i = 1 to n,
+      // "road[i] = false" means that there is no wall in Position i
+      // "road[i] = true" means that there is a wall in Position i
+      for (int i=1; i<=n; i++) {
+        //Case 1: if position i is not a wall...
+        if(!road[i]){
+           //...and there are more than 5 positions before i
+           if (i-6>=0){
+             DP[i] = Math.min((DP[i-1]+1),DP[i-6]+8);
+           }
+           //...and there are less than 5 positions before i
+           else{
+             DP[i] = (DP[i-1]+1);
+           }
+         }
+        //Case 2: if position i is a wall...
+        else {
+          //only 1 case: climb over from the previous position
+           DP[i] = (DP[i-1]+2);
+        }
+        //Out.println("DP["+i+"] is"+DP[i]);
+      }
+      return DP[n];
+    }
+}
