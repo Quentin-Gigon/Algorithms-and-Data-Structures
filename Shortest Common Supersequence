@@ -1,0 +1,57 @@
+class Main {
+    public static void main(String[] args) {
+        
+        // Uncomment the following two lines if you want to read from a file
+        In.open("public/test2.in");
+         Out.compareTo("public/test2.out");
+
+        int n = In.readInt();           // Read Length of A
+        int m = In.readInt();           // Read Length of B
+        String A=In.readString();       // Read A as a string
+        String B=In.readString();       // Read B as a string
+        
+    
+        
+        
+        Out.println(shortest_common_supersequence(n,m,A,B));
+        
+      
+        // Uncomment the following line if you want to read from a file
+        In.close();
+    }
+    
+    public static int shortest_common_supersequence(int n, int m, String A, String B)
+    {
+      
+      int[][] SCS = new int[n+1][m+1]; // DP-Table 
+      
+      //Base Case 
+      //Fill first column with 0,1,2,...n
+      for (int i =0; i<=n; i++){
+        SCS[i][0] = i;
+      }
+      
+      //Fill first column with 0,1,2,...m
+      for (int j =0; j<=m; j++){
+        SCS[0][j] = j;
+      }
+      
+      //fill rest of table
+      for(int i=1; i<=n; i++){
+        for (int j=1; j<=m; j++){
+          if (A.charAt(i-1)==B.charAt(j-1)){
+            SCS[i][j]=SCS[i-1][j-1]+1;
+          }
+          else {
+            SCS[i][j]=Math.min(SCS[i-1][j], SCS[i][j-1])+1;
+          }
+        }
+      }
+      
+      //return solution
+      return SCS[n][m];
+      
+    }
+
+   
+}
