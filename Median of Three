@@ -1,0 +1,27 @@
+/*
+Your task is to program an algorithm that for three distint integers, returns their median. For example, if the input is 3, 1 and 2, the output is 2. You only need to implement the method "Median" in the file "Main.java".
+*/
+
+import java.util.Arrays;
+
+class Main {
+    public static void main(String[] args) {
+      
+        int round = In.readInt(); //Read the number of actions
+        
+        for(int i=0; i<round ;i++)
+            Out.println(Median(In.readInt(),In.readInt(),In.readInt()));
+     
+    }
+    
+    public static int Median(int a, int b, int c)
+    {
+      
+      int[] digits = new int[] {a,b,c}; //put digits in an array
+      Arrays.sort(digits); //sort array
+      int median = digits[1]; //median is the middle element of the array
+      return median;
+    }
+
+   
+}
