@@ -1,0 +1,54 @@
+class Main {
+  
+
+    public static void main(String[] args) {
+      
+      
+        // Uncomment this line if you want to read from a file
+        In.open("public/test2.in");
+        //In.open("public/custom.in");
+        //Out.compareTo("public/custom.out");
+
+
+        int[] array; // an array of integers as input
+        
+        int length = In.readInt();  // read the length of the input array
+        
+        array = new int[length];
+        
+        // read the input array
+        for(int i=0;i<length ;i++)
+          array[i]=In.readInt();
+        
+        Out.println(number_of_inversion(array));
+        
+        
+        
+        // Uncomment this line if you want to read from a file
+        In.close();
+    }
+    
+    private static int number_of_inversion(int [] array) {
+      int counter = 0;
+      int temp;
+      int min;
+      int indexMin = 0;
+      for (int i=0; i<array.length;i++){
+        for (int j=i; j<array.length; j++){
+          //if element in array is smaller than min, then we have found a pair, counter++
+          if (array[j]<array[i]){
+           counter++;
+          }
+        }/*
+        if(min<array[i]) { 
+         counter++;
+         Out.println("min is :"+min+" Counter is : "+counter);
+         temp=min;
+         array[indexMin] = array[i];
+         array[i] = temp;
+        }
+        */
+      }
+      return counter;
+    }
+}
