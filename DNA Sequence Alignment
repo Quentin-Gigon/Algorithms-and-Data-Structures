@@ -1,0 +1,38 @@
+import java.io.*;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.lang.Math;
+import java.lang.Integer;
+
+class Main {
+    public static void main(String[] args) {
+        // Uncomment the following two lines if you want to read from a file
+         //In.open("public/test1.in");
+         //Out.compareTo("public/test1.out");
+
+        int m = In.readInt();
+        
+        for(int i=0 ;i <m;i++){
+          Out.println(DNA_Alignment(In.readWord(),In.readWord()));
+        }
+      
+        // Uncomment the following line if you want to read from a file
+        // In.close();
+    }
+    
+    
+    public static int DNA_Alignment(String dna1, String dna2) {
+      
+      
+      int[][] dt = new int[dna1.length() + 1][dna2.length() + 1];
+      
+      
+  
+  
+      
+      return dt[dna1.length()][dna2.length()];
+    }
+    
+
+   
+}
