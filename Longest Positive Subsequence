@@ -1,0 +1,65 @@
+class Main {
+  
+
+    public static void main(String[] args) {
+      
+      
+        // Uncomment this line if you want to read from a file
+        In.open("public/test1.in");
+        Out.compareTo("public/test1.out");
+
+
+        int[] array; // an array of integers as input
+        
+        
+        int length = In.readInt();  // read the length of the input array
+        
+        array = new int[length];
+        
+        // read the input array
+        for(int i=0;i< length ;i++)
+          array[i]=In.readInt();
+        
+        Out.println(longest_positive_subarry(array));
+        
+        
+        
+        // Uncomment this line if you want to read from a file
+        In.close();
+    }
+    
+    public static int longest_positive_subarry(int[] array)
+    {
+      int size = array.length;
+      
+      return findLongestPositiveSubarray(array, size);
+        
+    }
+    
+    //method which counts the longest occurence of contiguous positive elements and returns it
+    static int findLongestPositiveSubarray(int a[], int size){
+    //initialize counter variable and a globalMax variable
+    int counter=0;
+    int globalMax=0;
+    
+    //for each element in the array, if the element is positive, the counter will be incremented, else it is reset to zero
+    //if the counter is bigger than the globalMax, then it becomes the new globalMax
+    for (int i = 0; i < size; i++) {
+      if (a[i]>0){
+        counter++;
+      }
+      else {
+        counter = 0;
+      }
+      if (counter>globalMax){
+        globalMax=counter;
+      }
+    }
+    return globalMax;
+    }
+    
+    
+    
+      
+    
+}
