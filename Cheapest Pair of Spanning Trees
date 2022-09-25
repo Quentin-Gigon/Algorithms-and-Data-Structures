@@ -1,0 +1,300 @@
+import java.io.*;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Scanner;
+import java.lang.Math;
+import java.util.Comparator;
+
+
+
+class Main {
+    public static void main(String[] args) {
+      
+        // Uncomment the following two lines if you want to read from a file
+        In.open("public/test1.in");
+        Out.compareTo("public/test1.out");
+
+        int n=In.readInt();     // number of vertices
+        int m=In.readInt();     // number of edges
+        
+        
+        // The following two arrays stores the information of edges
+        int[][] edge_array=new int[m][3];
+        
+        
+        // Read edges
+        for(int i=0;i<m;i++){
+          edge_array[i][0]=In.readInt();  // one endpoint
+          edge_array[i][1]=In.readInt();  // the other endpoint
+          edge_array[i][2]=In.readInt();  // weight
+        }
+        
+        
+        Graph G= new Graph(n, m, edge_array);
+        Out.println(G.Cheapest_Pair_of_Spanning_Trees());
+        
+      
+        // Uncomment the following line if you want to read from a file
+        In.close();
+    }
+
+   
+}
+
+class Graph{
+  
+  private int n;              // number of vertices
+  private int m;              // number of edges
+  private int[] degrees;      // degrees[i]: the degree of vertex i
+  private int[][] edges;      // edges[i][j]: the endpoint of the j-th edge of vertex i
+  private int[][] weights;    // weights[i][j]: the weight of the j-th edge of vertex i
+  
+
+  
+  Graph(int n, int m, int[][] edge_array){
+    this.n=n;
+    this.m=m;
+    degrees=new int[n];
+    
+    for(int i=0;i<n;i++){
+      degrees[i]=0;
+    }
+   
+    for(int i=0;i<m;i++){
+      degrees[edge_array[i][0]]++;
+      degrees[edge_array[i][1]]++;
+    }
+    
+    edges=new int[n][];
+    weights=new int[n][];
+      
+    for(int i=0;i<n;i++){
+      if(degrees[i]!=0){
+        edges[i]=new int[degrees[i]];
+        weights[i]=new int[degrees[i]];
+        degrees[i]=0;
+      }
+      else{
+        edges[i]=null;
+        weights[i]=null;
+      }
+    }
+    
+    for(int i=0;i<m;i++){
+      edges[edge_array[i][0]][degrees[edge_array[i][0]]]=edge_array[i][1];
+      edges[edge_array[i][1]][degrees[edge_array[i][1]]]=edge_array[i][0];
+      weights[edge_array[i][0]][degrees[edge_array[i][0]]]=edge_array[i][2];
+      weights[edge_array[i][1]][degrees[edge_array[i][1]]]=edge_array[i][2];
+      degrees[edge_array[i][0]]++;
+      degrees[edge_array[i][1]]++;
+    } 
+  }
+  
+  public int Cheapest_Pair_of_Spanning_Trees(){
+    // Please complete this Method
+    // Vertices u, v are supposed to be vertices 0, 1
+    
+    //initialize two queues, add 
+    PriorityQueue<Pair> heapU = new PriorityQueue<>(new CustomComparator());
+    PriorityQueue<Pair> heapV = new PriorityQueue<>(new CustomComparator());
+    
+    //add all vertices to both queues, setting key to infinity, setting start vertices to zero
+    for (int i=0;i<n;i++){
+      //if vertex is u, add it with key 0 to heapU
+      if(i==0){
+        heapU.add(new Pair(i, 0));
+        heapV.add(new Pair(i, Integer.MAX_VALUE));
+      }
+      //if vertex is v, add it with key 0 to heapV
+      else if(i==1){
+        heapU.add(new Pair(i, Integer.MAX_VALUE));
+        heapV.add(new Pair(i, 0));
+      }
+      //else its just some normal vertex, add to both heaps with key = infinity
+      else {
+        heapU.add(new Pair(i, Integer.MAX_VALUE));
+        heapV.add(new Pair(i, Integer.MAX_VALUE));
+      }
+    }
+    
+    //initialize two linked lists to store MSTu and MSTv, add start vertices to MSTu and MSTv
+    LinkedList<Pair> MSTu = new LinkedList<>();
+    LinkedList<Pair> MSTv = new LinkedList<>();
+    
+    //array to store wether vertex i is in the MST or not
+    boolean[] inMST = new boolean[n];
+    
+    //array to store parents of extracted vertices
+    int[] parentU = new int[n];
+    parentU[0]=0;
+    int[] parentV = new int[n];
+    parentV[1]=1;
+    
+    //variable to return the tree size
+    int treeSize = 0;
+    
+    while(heapU.peek()!=null && heapV.peek()!=null){
+      Out.println("Heap U size "+heapU.size());
+      Out.println("Heap V size "+heapV.size());
+      //if extract_min of heapU is smaller (or equal) than extract_min of heapV...
+      Out.println("extract_min heapU is "+heapU.peek().value+", extract_min heapV is "+heapV.peek().value);
+      if(heapU.peek().value<=heapV.peek().value){
+        //...extract it...
+        Pair toAddU = heapU.poll();
+        Out.println("vertex "+toAddU.index+" extracted from heapU, Heap U size "+heapU.size());
+        //...if its not in any MST yet, add it to U, set its inMST value to true, increase tree size, else do nothing...
+        if (!inMST[toAddU.index]){
+          MSTu.add(toAddU);
+          Out.println("vertex "+toAddU.index+" added to MST");
+          inMST[toAddU.index]=true;
+          for(int i=0;i<degrees[parentU[toAddU.index]];i++){
+            if(toAddU.index==edges[parentU[toAddU.index]][i]){
+              treeSize+=weights[parentU[toAddU.index]][i];
+              Out.println("weight added to MST from vertex "+parentU[toAddU.index]+" to vertex "+toAddU.index+" is "+ weights[parentU[toAddU.index]][i]);
+            }
+          }
+          
+          //relax all edges (i.e. for all outgoing edges from toAdd, adjust value in heapU)
+          //1. convert heap into array to be traversed
+          Pair[] heapArrayU = heapU.toArray(new Pair[heapU.size()]);
+          
+          //Out.println("heap converted to array");
+          
+          //2. clear the heap
+          heapU.clear();
+          
+         //Out.println("heap cleared");
+          
+          //3.iterate over element of array, if its a neighbor of the extracted vertex, relax its edge
+         
+          for (int i=0;i<heapArrayU.length;i++){
+            for(int j=0;j<degrees[toAddU.index];j++){
+              //if vertex in the queue is a neighbor of the vertex we extracted
+             if(heapArrayU[i].index==edges[toAddU.index][j]){
+                //relax its edge (IF relaing is smaller than value vertex already has)
+                 if(heapArrayU[i].value>toAddU.value+weights[toAddU.index][j]){
+                  heapArrayU[i].value=toAddU.value+weights[toAddU.index][j];
+                  Out.println("vertex "+heapArrayU[i].index+" relaxed, new value is "+heapArrayU[i].value);
+                }
+                //set its parent to the vertex we extracted
+                parentU[i]=toAddU.index;
+              }
+            }
+          }
+          
+          //4. add elements back into heap
+          for (int i=0;i<heapArrayU.length;i++){
+            heapU.add(heapArrayU[i]);        
+          }
+        }
+      } 
+      //if extract_min of heapV is smaller (or equal) than extract_min of heapU...
+      else{
+        //...extract it...
+        Pair toAddV = heapV.poll();
+        Out.println("vertex "+toAddV.index+" extracted from heapV, Heap V size "+heapV.size());
+        //...if its not in any MST yet, add it to V, set its inMST value to true, increase the treeSize by the weight else do nothing...
+        if (!inMST[toAddV.index]){
+           MSTv.add(toAddV);
+           Out.println("vertex "+toAddV.index+" added to MST");
+           inMST[toAddV.index]=true;
+           for(int i=0;i<degrees[parentV[toAddV.index]];i++){
+            if(toAddV.index==edges[parentV[toAddV.index]][i]){
+              treeSize+=weights[parentV[toAddV.index]][i];
+            }
+          }
+           
+          //relax all edges (i.e. for all outgoing edges from toAdd, adjust value in heapU)
+          //1. convert heap into array to be traversed
+          Pair[] heapArrayV = heapV.toArray(new Pair[heapV.size()]);
+          
+          //2. clear the heap
+          heapV.clear();
+          
+          //3.iterate over element of array, if its a neighbor of the extracted vertex, relax its edge
+          for (int i=0;i<heapArrayV.length;i++){
+            for(int j=0;j<degrees[toAddV.index];j++){
+              //if vertex in the queue is a neighbor of the vertex we extracted
+             if(heapArrayV[i].index==edges[toAddV.index][j]){
+                //relax its edge
+                if(heapArrayV[i].value>toAddV.value+weights[toAddV.index][j]){
+                  heapArrayV[i].value=toAddV.value+weights[toAddV.index][j];
+                   Out.println("vertex "+heapArrayV[i].index+" relaxed, new value is "+heapArrayV[i].value);
+                }
+                //set its parent to the vertex we extracted
+                parentV[i]=toAddV.index;
+              }
+            }
+          }
+          
+          //4. add elements back into heap
+          for (int i=0;i<heapArrayV.length;i++){
+            heapV.add(heapArrayV[i]);        
+          }
+        }
+      }
+    }
+  //when algo is finished, we will have the cheapest pair of trees
+  
+  //print treeV
+   Out.print("MSTv contains vertices [");
+  for (int i=0;i<MSTv.size();i++){
+     Out.print(MSTv.get(i).index+" ");
+  }
+  Out.print("]");
+  
+  Out.println();
+  
+  //print TreeU
+  Out.print("MSTu contains vertices [");
+  for (int i=0;i<MSTu.size();i++){
+     Out.print(MSTu.get(i).index+" ");
+  }
+  Out.print("]");
+  
+  Out.println();
+  
+  
+  return treeSize;
+ }
+}
+
+class Pair implements Comparable<Pair> {
+  
+    public int index;
+    public int value;
+  
+    public Pair(int index, int value) {
+        this.index = index;
+        this.value = value;
+    }
+
+    @Override
+    public int compareTo(Pair other) {
+        if(this.value < other.value){
+          return -1;
+        }
+        else if(this.value==other.value){
+          return 0;
+        }
+        else{
+          return 1;
+        }
+    }
+}
+
+class CustomComparator implements Comparator<Pair>{
+  public int compare(Pair pair1, Pair pair2){
+    int value = pair1.compareTo(pair2);
+    if (value>0){
+      return 1;
+    }
+    else if(value<0){
+      return -1;
+      
+    }
+    else{
+      return 0;
+    }
+  }
+}
