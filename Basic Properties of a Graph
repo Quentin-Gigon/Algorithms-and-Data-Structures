@@ -1,0 +1,232 @@
+import java.io.*;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.lang.Math;
+
+
+class Main {
+    public static void main(String[] args) {
+      
+        // Uncomment the following two lines if you want to read from a file
+        In.open("public/test2.in");
+        Out.compareTo("public/test2.out");
+
+        int n=In.readInt();     // number of vertices
+        int m=In.readInt();     // number of edges
+        
+        
+        // The following two arrays stores the information of edges
+        int[] edge_from_array=new int[m];
+        int[] edge_to_array=new int[m];
+        
+        
+        
+        // Read edges
+        for(int i=0;i<m;i++)
+        {
+         
+          edge_from_array[i]=In.readInt();
+          edge_to_array[i]=In.readInt();
+        }
+        
+        
+        
+        AcyclicGraph G= new AcyclicGraph(n, m, edge_from_array, edge_to_array);
+      
+        int k=In.readInt();     // number of operations;
+        
+        for(int i=0;i<k;i++)
+        {
+          char task=In.readChar();
+          
+          int u,v,w;
+          int[] sorted_array;
+          
+          switch(task)
+          {
+            case 'O':           // Ordered Triple
+            
+              u=In.readInt();
+              v=In.readInt();
+              w=In.readInt();
+              
+              
+              
+              Out.println(G.OrderedTriple(u,v,w));
+            
+              break;
+              
+            case 'T':           // Topological Sort
+            
+              sorted_array=new int[n];
+              for(int j=0;j<n;j++)
+                sorted_array[j]=In.readInt();
+                
+
+              
+              Out.println(G.IsTopologicalSort(sorted_array));
+            
+              break;
+              
+            case 'R':           // Reachable
+              
+              u=In.readInt();
+              v=In.readInt();
+              
+              
+              Out.println(G.Reachable(u,v));
+              
+              break;            
+          }
+          
+        }
+      
+        // Uncomment the following line if you want to read from a file
+        //In.close();
+    }
+
+   
+}
+
+class AcyclicGraph{
+  
+  private int n;              // number of vertices
+  private int m;              // number of edges
+  private int[] out_degrees;  // out_degrees[i]: the out-degree of vertex i
+  private int[][] out_edges;  // out_edges[i][j]: the j-th out_edge of vertex i
+  
+  
+  
+  AcyclicGraph(int n, int m, int[] edge_from_array, int[] edge_to_array)
+  {
+    
+    this.n=n;
+    this.m=m;
+    
+    
+    out_degrees=new int[n];
+    
+    
+    
+    for(int i=0;i<n;i++)
+      out_degrees[i]=0;
+      
+    
+   
+    for(int i=0;i<m;i++)
+      out_degrees[edge_from_array[i]]++;
+      
+    
+    out_edges=new int[n][];
+      
+    for(int i=0;i<n;i++)
+    {
+      if(out_degrees[i]!=0)
+      {
+        out_edges[i]=new int[out_degrees[i]];
+        out_degrees[i]=0;
+      }
+      else
+      {
+        out_edges[i]=null;
+      }
+    }
+    
+    for(int i=0;i<m;i++)
+      out_edges[edge_from_array[i]][out_degrees[edge_from_array[i]]++]=edge_to_array[i];
+      
+
+
+    
+  }
+  
+  public boolean OrderedTriple(int u, int v, int w)
+  {
+    boolean isATriple = false;
+    boolean uv = false;
+    boolean uw = false;
+    boolean vw = false;
+    
+    //check uv
+    if(out_edges[u]==null){
+      //do nothing
+    }
+    else{
+      for(int i=0;i<this.out_edges[u].length;i++){
+        if(this.out_edges[u][i]==v){
+          uv=true;
+        }
+      }
+      //check uw
+      for(int i=0;i<this.out_edges[u].length;i++){
+        if(this.out_edges[u][i]==w){
+          uw=true;
+        }
+      }
+    }
+    
+    //check vw
+    if(out_edges[v]==null){
+      //do nothing
+    }
+    else{
+      for(int i=0;i<this.out_edges[v].length;i++){
+        if(this.out_edges[v][i]==w){
+          vw=true;
+        }
+      }
+    }
+    return uv && uw && vw;
+  }
+  
+  
+  public boolean Reachable(int u, int v)
+  {
+    //Base Case 
+    if(u==v){
+      return true;
+    }
+    else if(out_edges[u]==null){
+      return false;
+    }
+    else {
+      
+      boolean[] booleanValues = new boolean[this.out_edges[u].length];
+      for(int i=0;i<this.out_edges[u].length;i++){
+        booleanValues[i] = Reachable(this.out_edges[u][i], v);
+    }
+    for (int j=0;j<booleanValues.length;j++){
+      if (booleanValues[j]=true){
+        return true;
+      }
+    }
+    return false;
+    }
+  }
+  
+  
+  
+
+  
+  public boolean IsTopologicalSort(int sorted_array[]) {
+    LinkedList<Integer> list = new LinkedList<Integer>();
+    boolean isTopSort = true;
+    for (int i=0;i<sorted_array.length;i++){
+      list.add(sorted_array[i]);
+    }
+    
+    for (int i=0;i<sorted_array.length;i++){
+      if (this.out_edges[sorted_array[i]]==null){
+        //do nothing
+      }
+      else{
+        for (int j=0;j<this.out_edges[sorted_array[i]].length;j++){
+          if(list.indexOf(this.out_edges[sorted_array[i]][j])<list.indexOf(sorted_array[i])){
+            isTopSort=false;
+          }
+        }
+      }
+    }
+    return isTopSort;
+  }
+}
