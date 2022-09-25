@@ -1,0 +1,367 @@
+import java.io.*;
+import  java.util.LinkedList;
+import java.util.Scanner;
+import java.lang.Math;
+
+
+
+
+class Main {
+    public static void main(String[] args) {
+        // Uncomment the following two lines if you want to read from a file
+        In.open("public/test2.in");
+        Out.compareTo("public/test2.out");
+
+        int m = In.readInt();                 // Number of Operations
+        char[] Operation_Array=new char[m];   // Operators (Insertion, Deletion, Query)
+        int[] Operand_Array=new int[m];       // Keys
+        
+        
+        for(int i=0;i<m;i++)
+        {
+          Operation_Array[i]=In.readChar();
+          Operand_Array[i]=In.readInt();
+        }
+        
+        
+      
+        BinaryTree T=new BinaryTree();
+        
+        for(int i=0;i<m;i++)
+        {
+        
+          
+          switch(Operation_Array[i])
+          {
+            case 'I':  // Insertion
+              T.insert(Operand_Array[i]);
+              break;
+              
+            case 'D':  // Deletion
+              T.delete(Operand_Array[i]);
+              break;
+              
+            case 'Q':  // Query 
+            
+              
+              Out.println(T.rank(Operand_Array[i]));
+          }
+        }
+        // Uncomment the following line if you want to read from a file
+        //In.close();
+    }
+}
+
+class TreeNode {
+    public int key;
+    public int sizeLeftSubtree;
+    public TreeNode parent;
+    public TreeNode left;
+    public TreeNode right;
+    
+    TreeNode(int key) {
+        this.key=key;
+        this.sizeLeftSubtree = 0; 
+        this.parent=null;
+        this.left=null;
+        this.right=null;
+    }
+}
+
+class BinaryTree {
+    TreeNode root;
+    
+    BinaryTree() {
+      this.root=null;
+    }
+    
+    public int rank(int key) {
+      //initialization
+      int[] counter = new int[1];
+      counter[0]=1;
+      //use the parseTree method to find all elements smaller than key
+      parseTree(root, key, counter);
+      return counter[0];
+    }
+    
+    //Parses the tree, by recursing only on one side of the tree, and returning 
+    public void parseTree(TreeNode currNode, int key, int[] counter){
+      if (currNode.left==null){
+        if(currNode.right==null){
+          if (currNode.key<key)
+          //Base case
+           counter[0]++;
+           return;
+        }
+        //recursion
+        else{
+          //node only has right subtree
+          if (currNode.key<key){
+            counter[0]++;
+            parseTree(currNode.right, key, counter);
+          }
+        }
+      }
+      
+      else {
+        if(currNode.right==null){
+          //node only has left subtree
+          if (currNode.key<key){
+            counter[0]++;
+            counter[0]+=currNode.sizeLeftSubtree;
+          }
+          else{
+            parseTree(currNode.left, key, counter);
+          }
+        }
+        else{
+          //node has both left and right subtrees
+          if (currNode.key<key){
+            counter[0]++;
+            counter[0]+=currNode.sizeLeftSubtree;
+            parseTree(currNode.right, key, counter);
+          }
+          else{
+            parseTree(currNode.left, key, counter);
+          }
+        }
+      }
+    }
+    
+    //subroutine to restore all sizeLeftSubtree of all nodes from tree rooted at currNode
+    public void restoreSizeLeftSubtree(TreeNode currNode) {
+      if(root==null){
+        return;
+      }
+      
+      if (currNode.left==null){
+        if(currNode.right==null){
+          //Base case
+           currNode.sizeLeftSubtree=0;
+           return;
+        }
+        //recursion
+        else{
+          //node only has right subtree
+           currNode.sizeLeftSubtree=0;
+           restoreSizeLeftSubtree(currNode.right);
+        }
+      }
+      
+      else {
+        if(currNode.right==null){
+          //node only has left subtree
+          int[] counter = new int[1];
+          treeSize(currNode.left, counter);
+          currNode.sizeLeftSubtree=counter[0];
+          restoreSizeLeftSubtree(currNode.left);
+        }
+        else{
+          //node has both left and right subtrees
+          int[] counter = new int[1];
+          treeSize(currNode.left, counter);
+          currNode.sizeLeftSubtree=counter[0];
+          restoreSizeLeftSubtree(currNode.left);
+          restoreSizeLeftSubtree(currNode.right);
+        }
+      }
+    }
+    
+    //finds size of tree rooted at "node", pass in counter initialized at 1
+    public void treeSize(TreeNode currNode, int[] counter){
+      if (currNode.left==null){
+        if(currNode.right==null){
+          //Base case
+           counter[0]++;
+           return;
+        }
+        //recursion
+        else{
+          //node only has right subtree
+            counter[0]++;
+           treeSize(currNode.right, counter);
+        }
+      }
+      
+      else {
+        if(currNode.right==null){
+          //node only has left subtree
+          counter[0]++;
+          treeSize(currNode.left, counter);
+        }
+        else{
+          //node has both left and right subtrees
+          counter[0]++;
+          treeSize(currNode.left, counter);
+          treeSize(currNode.right, counter);
+        }
+      }
+    }
+    
+    public void insert(int key)
+    {
+      if(root==null)
+      {
+        root=new TreeNode(key);
+      }
+      else
+      {
+        insert(root,key);
+      }
+      restoreSizeLeftSubtree(root);
+      
+    }
+    
+    public void insert(TreeNode node,int key)
+    {
+      if(key<node.key)
+        if(node.left!=null)
+          insert(node.left,key);
+        else
+        {
+          node.left=new TreeNode(key);
+          node.left.parent=node;
+        }
+      else
+        if(node.right!=null)
+          insert(node.right,key);
+        else
+        {
+          node.right=new TreeNode(key);
+          node.right.parent=node;
+        }
+    }
+    
+    public void delete(int key)
+    {
+      
+      // find the node to be deleted
+      TreeNode node=search(key);
+      
+      if(node==null)
+        return;
+      
+      if(node.left==null)
+      {
+        if(node.right==null)
+        {
+          // no child
+          if(node==root)
+            root=null;
+          else
+            if(node.parent.left==node)
+              node.parent.left=null;
+            else
+              node.parent.right=null;
+        }
+        else
+        {
+          // only right child
+          
+          if(node==root)
+          {
+            root=node.right;
+            root.parent=null;
+          }
+          else
+            if(node.parent.left==node)
+            {
+              node.parent.left=node.right;
+              node.right.parent=node.parent;
+            }
+            else
+            {
+              node.parent.right=node.right;
+              node.right.parent=node.parent;
+            }
+        }
+        
+      }
+      else
+      {
+        if(node.right==null)
+        {
+          //only left child
+          
+          if(node==root)
+          {
+            root=node.left;
+            root.parent=null;
+          }
+          else
+            if(node.parent.left==node)
+            {
+              node.parent.left=node.left;
+              node.left.parent=node.parent;
+            }
+            else
+            {
+              node.parent.right=node.left;
+              node.left.parent=node.parent;
+            }
+        }
+        else
+        {
+          // two children
+          
+          TreeNode swap_node=node.left;
+          while(swap_node.right!=null)
+            swap_node=swap_node.right;
+            
+          
+            
+          node.key=swap_node.key;
+          
+          if(swap_node.left!=null)
+          {
+            // Swap_node has left Child
+            
+            if(swap_node.parent.left==swap_node)
+            {
+              swap_node.parent.left=swap_node.left;
+              swap_node.left.parent=swap_node.parent;
+            }
+            else
+            {
+              swap_node.parent.right=swap_node.left;
+              swap_node.left.parent=swap_node.parent;
+            }
+          }
+          else
+          {
+            // Swap_node has no child
+            
+            if(swap_node.parent.left==swap_node)
+              swap_node.parent.left=null;
+            else
+              swap_node.parent.right=null;
+          }
+        }
+      }
+      restoreSizeLeftSubtree(root);
+    }
+    
+    
+    
+    public TreeNode search(int key)
+    {
+      if(root==null)
+        return null;
+      else
+        return search(root,key);
+    }
+    
+    public TreeNode search(TreeNode node,int key)
+    {
+      if(node==null)
+        return null;
+      else if(key==node.key)
+        return node;
+      else
+        if(key<node.key)
+          return search(node.left,key);
+        else
+          return search(node.right,key);
+    }
+} 
+
