@@ -1,0 +1,146 @@
+import java.io.*;
+import java.util.LinkedList;
+import java.util.Scanner;
+import java.lang.Math;
+
+class Main {
+    public static void main(String[] args) {
+      
+        // Uncomment the following two lines if you want to read from a file
+        In.open("public/test2.in");
+        Out.compareTo("public/test2.out");
+
+        int n=In.readInt();     // number of vertices
+        int m=In.readInt();     // number of edges
+        
+        // The following two arrays stores the information of edges
+        int[][] edge_array=new int[m][2];
+        
+        // Read edges
+        for(int i=0;i<m;i++){
+          edge_array[i][0]=In.readInt();
+          edge_array[i][1]=In.readInt();
+        }
+        
+        Graph G= new Graph(n, m, edge_array);
+        Out.println(G.length_of_mean_tree());
+        
+      
+        // Uncomment the following line if you want to read from a file
+        In.close();
+    }
+}
+
+class Graph{
+  
+  private int n;              // number of vertices
+  private int m;              // number of edges
+  private int[] degrees;      // degrees[i]: the degree of vertex i
+  private int[][] edges;      // edges[i][j]: the endpoint of the j-th edge of vertex i
+  
+  Graph(int n, int m, int[][] edge_array){
+    this.n=n;
+    this.m=m;
+    degrees=new int[n];
+    
+    for(int i=0;i<n;i++){
+      degrees[i]=0;
+    }
+      
+    for(int i=0;i<m;i++){
+      degrees[edge_array[i][0]]++;
+      degrees[edge_array[i][1]]++;
+    }
+    
+    edges=new int[n][];
+      
+    for(int i=0;i<n;i++){
+      if(degrees[i]!=0){
+        edges[i]=new int[degrees[i]];
+        degrees[i]=0;
+      }
+      else{
+        edges[i]=null;
+      }
+    }
+    
+    for(int i=0;i<m;i++){
+      edges[edge_array[i][0]][degrees[edge_array[i][0]]++]=edge_array[i][1];
+      edges[edge_array[i][1]][degrees[edge_array[i][1]]++]=edge_array[i][0];
+    } 
+  }
+  
+  public int length_of_mean_tree(){
+    // Please complete this method
+    // Vertices u, v, w are assumed to be vertices 0, 1, 2.
+    
+    //base case graph empty or smaller than 3
+    if(n<=3){
+      return -1;
+    }
+    
+    else{
+    //initialize three arrays to store all d(0,...), d(1,...), d(2,...) values
+    int[][] distanceFromTo = new int[3][n];
+    distanceFromTo[0][0]=0;
+    distanceFromTo[1][1]=0;
+    distanceFromTo[2][2]=0;
+    
+    //initialize three arrays to store which vertices have been visited in BFS
+    boolean[] visited0 = new boolean[n];
+    visited0[0]=true;
+    boolean[] visited1 = new boolean[n];
+    visited1[1]=true;
+    boolean[] visited2 = new boolean[n];
+    visited2[2]=true;
+    
+    //initialize three empty queues for each BFS
+    LinkedList<Integer> q0 = new  LinkedList<Integer>();
+    LinkedList<Integer> q1 = new  LinkedList<Integer>();
+    LinkedList<Integer> q2 = new  LinkedList<Integer>();
+    
+    //run BFS 3 times in graph, fill distanceFrom...to arrays
+    BFS(distanceFromTo, visited0, 0, 0, q0);
+    BFS(distanceFromTo, visited1, 1, 1, q1);
+    BFS(distanceFromTo, visited2, 2, 2, q2);
+    
+    //test all possible combinations, store min
+    int min = Integer.MAX_VALUE;
+    for (int i=3;i<n;i++){
+      int totalDistance = distanceFromTo[0][i]+distanceFromTo[1][i]+distanceFromTo[2][i];
+      if (totalDistance<min){
+        min=totalDistance;
+      }
+    }
+    //return min
+    return min;
+    }
+  }
+  
+  //special BFS to fill the distanceFrom...to arrays
+  public void BFS(int[][] distanceFromSource, boolean[] visited, int originalSource, int source, LinkedList<Integer> q){
+    //for all neighbors of source...
+    for (int i=0;i<degrees[source];i++){
+      //...if neighbor is unvisited
+      if(!(visited[edges[source][i]])){
+        //add vertex to queue, set its distance from the source, mark it as visited
+        q.add(edges[source][i]);
+        distanceFromSource[originalSource][edges[source][i]]=distanceFromSource[originalSource][source]+1;
+        visited[edges[source][i]]=true;
+      }
+    }
+    
+    //base case
+    if(q.isEmpty()){
+      return;
+    }
+    
+    //divide & conquer
+    //dequeue first element in queue and run BFS recursively on it
+    else{
+    int newSource = q.pollFirst();
+    BFS(distanceFromSource, visited, originalSource, newSource, q);
+    }
+  }
+  
+}
